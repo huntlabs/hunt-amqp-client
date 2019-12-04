@@ -1,4 +1,4 @@
-name "hunt-amqp"
+name "hunt-amqp-client"
 description "AMQP Client Library for D Programming Language. Support for RabbitMQ and other AMQP Server."
 copyright "Copyright © 2019, HuntLabs"
 homepage "https://www.huntlabs.net"
