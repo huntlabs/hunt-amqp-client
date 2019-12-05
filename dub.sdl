@@ -3,5 +3,4 @@ description "AMQP Client Library for D Programming Language. Support for RabbitM
 copyright "Copyright © 2019, HuntLabs"
 homepage "https://www.huntlabs.net"
 license "Apache-2.0"
-dependency "hunt" version="~>1.4.1"
-dependency "hunt-amqp" version="~>1.0.0-beta.1"
+dependency "hunt-amqp" path="../hunt-amqp"

@@ -14,10 +14,10 @@ import core.thread;
 void main()
 {
   AmqpClientOptions options = new AmqpClientOptions()
-  .setHost("127.0.0.1")
+  .setHost("10.1.223.62")
   .setPort(5672)
-  .setUsername("guest")
-  .setPassword("guest");
+  .setUsername("test")
+  .setPassword("123");
 
    AmqpClient client = AmqpClient.create(options);
 
@@ -39,11 +39,10 @@ void main()
                 logWarning("Unable to create a sender");
                 return;
               }
-              for (int i = 0 ; i < 10000000; ++i)
+              for (int i = 0 ; i < 100; ++i)
               {
-                sender.send(AmqpMessage.create().withBody("hello -----------------------------------------！@@￥#￥%……%￥……%&（*&（").build());
+                sender.send(AmqpMessage.create().withBody("hello world").build());
                 logInfo("send complite");
-                 Thread.sleep(500.msecs);
               }
           }
         });
