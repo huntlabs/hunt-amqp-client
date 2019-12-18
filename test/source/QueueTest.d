@@ -10,6 +10,18 @@ import hunt.amqp.AmqpReceiver;
 import hunt.amqp.AmqpConnection;
 import hunt.logging;
 import core.thread;
+import std.parallelism;
+
+void senderTask(AmqpSender sender)
+{
+  while(true)
+  {
+    sender.send(AmqpMessage.create().withBody("hello world").build());
+    logInfo("send complite");
+    Thread.sleep(500.msecs);
+  }
+}
+
 
 void main()
 {
@@ -39,29 +51,32 @@ void main()
                 logWarning("Unable to create a sender");
                 return;
               }
-              for (int i = 0 ; i < 100; ++i)
-              {
-                sender.send(AmqpMessage.create().withBody("hello world").build());
-                logInfo("send complite");
-              }
+
+              auto t = task!(senderTask , AmqpSender)(sender);
+              taskPool.put(t);
+              //for (int i = 0 ; i < 100; ++i)
+              //{
+              //  sender.send(AmqpMessage.create().withBody("hello world").build());
+              //  logInfo("send complite");
+              //}
           }
         });
 
-       conn.createReceiver("my-queue", new class Handler!AmqpReceiver {
-          void handle(AmqpReceiver recv)
-          {
-              if(recv is null)
-              {
-                logWarning("Unable to create a receiver");
-                return;
-              }
-              recv.handler(new class Handler!AmqpMessage {
-                void handle(AmqpMessage msg){
-                  logInfo("Received %s" , msg.bodyAsString());
-                }
-              });
-          }
-       });
+       //conn.createReceiver("my-queue", new class Handler!AmqpReceiver {
+       //   void handle(AmqpReceiver recv)
+       //   {
+       //       if(recv is null)
+       //       {
+       //         logWarning("Unable to create a receiver");
+       //         return;
+       //       }
+       //       recv.handler(new class Handler!AmqpMessage {
+       //         void handle(AmqpMessage msg){
+       //           logInfo("Received %s" , msg.bodyAsString());
+       //         }
+       //       });
+       //   }
+       //});
      }
    });
 }

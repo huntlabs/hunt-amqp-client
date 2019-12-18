@@ -8,5 +8,6 @@
   "targetType": "executable",
   "dependencies": {
     "hunt-amqp-client": {"path": "../"}
-  }
+  },
+  "versions": ["HUNT_DEBUG"]
 }
