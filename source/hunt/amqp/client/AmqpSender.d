@@ -8,12 +8,12 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.AmqpSender;
+module hunt.amqp.client.AmqpSender;
 
 import hunt.amqp.Handler;
-import hunt.amqp.WriteStream;
-import hunt.amqp.AmqpMessage;
-import hunt.amqp.AmqpConnection;
+import hunt.amqp.client.WriteStream;
+import hunt.amqp.client.AmqpMessage;
+import hunt.amqp.client.AmqpConnection;
 import hunt.String;
 import hunt.Object;
 

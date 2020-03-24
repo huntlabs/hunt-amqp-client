@@ -8,7 +8,7 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.AmqpSenderOptions;
+module hunt.amqp.client.AmqpSenderOptions;
 
 //import hunt.codegen.annotations.DataObject;
 //import hunt.core.json.JsonObject;

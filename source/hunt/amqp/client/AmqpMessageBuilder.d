@@ -8,10 +8,10 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.AmqpMessageBuilder;
+module hunt.amqp.client.AmqpMessageBuilder;
 
-import hunt.amqp.impl.AmqpMessageBuilderImpl;
-import hunt.amqp.AmqpMessage;
+import hunt.amqp.client.impl.AmqpMessageBuilderImpl;
+import hunt.amqp.client.AmqpMessage;
 //import hunt.codegen.annotations.GenIgnore;
 //import hunt.codegen.annotations.VertxGen;
 //import hunt.core.buffer.Buffer;

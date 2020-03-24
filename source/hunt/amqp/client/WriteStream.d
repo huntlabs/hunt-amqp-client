@@ -9,9 +9,9 @@
  *
  */
 
-module hunt.amqp.WriteStream;
+module hunt.amqp.client.WriteStream;
 
-import hunt.amqp.StreamBase;
+import hunt.amqp.client.StreamBase;
 import hunt.amqp.Handler;
 import hunt.Object;
 import hunt.Exceptions;

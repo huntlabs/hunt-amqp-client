@@ -8,9 +8,9 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.AmqpMessage;
+module hunt.amqp.client.AmqpMessage;
 
-import hunt.amqp.impl.AmqpMessageBuilderImpl;
+import hunt.amqp.client.impl.AmqpMessageBuilderImpl;
 //import hunt.codegen.annotations.Fluent;
 //import hunt.codegen.annotations.GenIgnore;
 //import hunt.codegen.annotations.VertxGen;
@@ -23,7 +23,7 @@ import hunt.collection.Buffer;
 import hunt.collection.List;
 import hunt.collection.Map;
 //import hunt.collection.UUID;
-import hunt.amqp.AmqpMessageBuilder;
+import hunt.amqp.client.AmqpMessageBuilder;
 import std.json;
 
 /**

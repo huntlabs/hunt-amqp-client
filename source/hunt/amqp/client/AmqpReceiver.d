@@ -8,7 +8,7 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.AmqpReceiver;
+module hunt.amqp.client.AmqpReceiver;
 
 //import hunt.codegen.annotations.CacheReturn;
 //import hunt.codegen.annotations.Nullable;
@@ -17,10 +17,10 @@ module hunt.amqp.AmqpReceiver;
 //import hunt.core.Future;
 //import hunt.core.Handler;
 //import hunt.core.streams.ReadStream;
-import hunt.amqp.ReadStream;
-import hunt.amqp.AmqpMessage;
+import hunt.amqp.client.ReadStream;
+import hunt.amqp.client.AmqpMessage;
 import hunt.amqp.Handler;
-import hunt.amqp.AmqpConnection;
+import hunt.amqp.client.AmqpConnection;
 import hunt.Object;
 /**
  * Interface used to consume AMQP message as a stream of message.

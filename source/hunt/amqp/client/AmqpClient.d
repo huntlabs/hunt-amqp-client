@@ -9,25 +9,22 @@
  *
  */
 
-module hunt.amqp.AmqpClient;
+module hunt.amqp.client.AmqpClient;
 
-import hunt.amqp.impl.AmqpClientImpl;
-import hunt.amqp.AmqpClientOptions;
-import hunt.amqp.AmqpSender;
+import hunt.amqp.client.impl.AmqpClientImpl;
+import hunt.amqp.client.AmqpClientOptions;
+import hunt.amqp.client.AmqpSender;
 import hunt.amqp.Handler;
-import hunt.amqp.AmqpConnection;
-import hunt.amqp.AmqpReceiver;
-import hunt.amqp.AmqpReceiverOptions;
-import hunt.amqp.AmqpSenderOptions;
-//import hunt.codegen.annotations.Fluent;
-//import hunt.codegen.annotations.Nullable;
-//import hunt.codegen.annotations.VertxGen;
-//import hunt.core.AsyncResult;
-//import hunt.core.Future;
-//import hunt.core.Handler;
-//import hunt.core.Vertx;
+import hunt.amqp.client.AmqpConnection;
+import hunt.amqp.client.AmqpReceiver;
+import hunt.amqp.client.AmqpReceiverOptions;
+import hunt.amqp.client.AmqpSenderOptions;
 
 import hunt.Object;
+// import hunt.Functions;
+
+// alias AmqpHandler = Action1;
+
 
 /**
  * AMQP Client entry point.

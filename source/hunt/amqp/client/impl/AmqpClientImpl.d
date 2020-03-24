@@ -8,26 +8,26 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.impl.AmqpClientImpl;
+module hunt.amqp.client.impl.AmqpClientImpl;
 
 import hunt.amqp.ProtonClient;
 
 import hunt.collection.ArrayList;
 import hunt.collection.List;
-import hunt.amqp.AmqpClient;
-import hunt.amqp.AmqpClientOptions;
-import hunt.amqp.AmqpConnection;
+import hunt.amqp.client.AmqpClient;
+import hunt.amqp.client.AmqpClientOptions;
+import hunt.amqp.client.AmqpConnection;
 import hunt.amqp.Handler;
-import hunt.amqp.impl.AmqpConnectionImpl;
+import hunt.amqp.client.impl.AmqpConnectionImpl;
 import hunt.Assert ;
 import hunt.logging;
 import hunt.Object;
 import hunt.Exceptions;
 import hunt.String;
-import hunt.amqp.AmqpReceiver;
-import hunt.amqp.AmqpSender;
-import hunt.amqp.AmqpReceiverOptions;
-import hunt.amqp.AmqpSenderOptions;
+import hunt.amqp.client.AmqpReceiver;
+import hunt.amqp.client.AmqpSender;
+import hunt.amqp.client.AmqpReceiverOptions;
+import hunt.amqp.client.AmqpSenderOptions;
 
 class AmqpClientImpl : AmqpClient {
 

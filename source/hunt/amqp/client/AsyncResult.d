@@ -9,7 +9,7 @@
  *
  */
 
-module hunt.amqp.AsyncResult;
+module hunt.amqp.client.AsyncResult;
 
 import hunt.Exceptions;
 import hunt.Functions;

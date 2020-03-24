@@ -8,11 +8,11 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.impl.AmqpMessageBuilderImpl;
+module hunt.amqp.client.impl.AmqpMessageBuilderImpl;
 
-import hunt.amqp.AmqpMessage;
-import hunt.amqp.AmqpMessageBuilder;
-import hunt.amqp.impl.AmqpMessageImpl;
+import hunt.amqp.client.AmqpMessage;
+import hunt.amqp.client.AmqpMessageBuilder;
+import hunt.amqp.client.impl.AmqpMessageImpl;
 
 //import hunt.core.buffer.Buffer;
 //import hunt.core.json.JsonArray;

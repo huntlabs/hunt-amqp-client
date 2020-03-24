@@ -9,7 +9,7 @@
  *
  */
 
-module hunt.amqp.StreamBase;
+module hunt.amqp.client.StreamBase;
 
 import std.stdio;
 import hunt.amqp.Handler;

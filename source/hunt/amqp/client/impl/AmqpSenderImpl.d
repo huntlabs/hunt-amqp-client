@@ -8,17 +8,17 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.impl.AmqpSenderImpl;
+module hunt.amqp.client.impl.AmqpSenderImpl;
 
-import hunt.amqp.AmqpConnection;
-import hunt.amqp.AmqpMessage;
-import hunt.amqp.AmqpSender;
+import hunt.amqp.client.AmqpConnection;
+import hunt.amqp.client.AmqpMessage;
+import hunt.amqp.client.AmqpSender;
 import hunt.proton.amqp.transport.DeliveryState;
 import hunt.amqp.ProtonDelivery;
 import hunt.amqp.ProtonSender;
 import hunt.amqp.impl.ProtonSenderImpl;
 import hunt.amqp.Handler;
-import hunt.amqp.impl.AmqpConnectionImpl;
+import hunt.amqp.client.impl.AmqpConnectionImpl;
 import hunt.Object;
 import hunt.logging;
 import hunt.String;

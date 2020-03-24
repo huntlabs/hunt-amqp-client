@@ -8,16 +8,16 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.impl.AmqpConnectionImpl;
+module hunt.amqp.client.impl.AmqpConnectionImpl;
 
-import hunt.amqp.AmqpClientOptions;
-import hunt.amqp.AmqpSender;
-import hunt.amqp.AmqpReceiver;
-import hunt.amqp.impl.AmqpClientImpl;
-import hunt.amqp.AmqpReceiverOptions;
-import hunt.amqp.impl.AmqpReceiverImpl;
-import hunt.amqp.impl.AmqpSenderImpl;
-import hunt.amqp.AmqpSenderOptions;
+import hunt.amqp.client.AmqpClientOptions;
+import hunt.amqp.client.AmqpSender;
+import hunt.amqp.client.AmqpReceiver;
+import hunt.amqp.client.impl.AmqpClientImpl;
+import hunt.amqp.client.AmqpReceiverOptions;
+import hunt.amqp.client.impl.AmqpReceiverImpl;
+import hunt.amqp.client.impl.AmqpSenderImpl;
+import hunt.amqp.client.AmqpSenderOptions;
 //import hunt.core.*;
 import hunt.amqp.ProtonConnection;
 import hunt.amqp.impl.ProtonConnectionImpl;
@@ -43,7 +43,7 @@ import hunt.collection.ArrayList;
 //import hunt.collection.concurrent.CopyOnWriteArrayList;
 //import hunt.collection.concurrent.atomic.AtomicBoolean;
 //import hunt.collection.concurrent.atomic.AtomicReference;
-import hunt.amqp.AmqpConnection;
+import hunt.amqp.client.AmqpConnection;
 import hunt.String;
 import std.concurrency : initOnce;
 import hunt.logging;

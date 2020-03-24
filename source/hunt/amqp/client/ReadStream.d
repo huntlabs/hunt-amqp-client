@@ -9,10 +9,10 @@
  *
  */
 
-module hunt.amqp.ReadStream;
+module hunt.amqp.client.ReadStream;
 
 import std.stdio;
-import hunt.amqp.StreamBase;
+import hunt.amqp.client.StreamBase;
 import hunt.amqp.Handler;
 import hunt.Object;
 

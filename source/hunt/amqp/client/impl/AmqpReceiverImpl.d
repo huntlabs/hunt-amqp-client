@@ -8,19 +8,19 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.impl.AmqpReceiverImpl;
+module hunt.amqp.client.impl.AmqpReceiverImpl;
 
-import hunt.amqp.AmqpConnection;
-import hunt.amqp.AmqpMessage;
-import hunt.amqp.AmqpReceiver;
-import hunt.amqp.AmqpReceiverOptions;
+import hunt.amqp.client.AmqpConnection;
+import hunt.amqp.client.AmqpMessage;
+import hunt.amqp.client.AmqpReceiver;
+import hunt.amqp.client.AmqpReceiverOptions;
 import hunt.amqp.Handler;
 import hunt.amqp.ProtonReceiver;
 import hunt.Long;
 import hunt.Object;
 import hunt.collection.ArrayDeque;
 import hunt.collection.Queue;
-import hunt.amqp.impl.AmqpMessageImpl;
+import hunt.amqp.client.impl.AmqpMessageImpl;
 import hunt.collection.List;
 import hunt.collection.ArrayList;
 import hunt.amqp.ProtonMessageHandler;
@@ -28,7 +28,7 @@ import hunt.proton.message.Message;
 import hunt.amqp.ProtonDelivery;
 import hunt.logging;
 
-import hunt.amqp.impl.AmqpConnectionImpl;
+import hunt.amqp.client.impl.AmqpConnectionImpl;
 
 class AmqpReceiverImpl : AmqpReceiver {
 

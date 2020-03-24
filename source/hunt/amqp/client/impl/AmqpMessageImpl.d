@@ -8,10 +8,10 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.impl.AmqpMessageImpl;
+module hunt.amqp.client.impl.AmqpMessageImpl;
 
 import hunt.proton.amqp.messaging.Section;
-import hunt.amqp.AmqpMessage;
+import hunt.amqp.client.AmqpMessage;
 //import hunt.core.buffer.Buffer;
 import hunt.collection.ByteBuffer;
 //import hunt.core.json.JsonArray;

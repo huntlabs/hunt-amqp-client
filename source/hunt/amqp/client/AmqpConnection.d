@@ -8,7 +8,7 @@
  * Licensed under the Apache-2.0 License.
  *
  */
-module hunt.amqp.AmqpConnection;
+module hunt.amqp.client.AmqpConnection;
 
 //import hunt.codegen.annotations.Fluent;
 //import hunt.codegen.annotations.VertxGen;
@@ -16,10 +16,10 @@ module hunt.amqp.AmqpConnection;
 //import hunt.core.Future;
 import hunt.amqp.Handler;
 import hunt.Object;
-import hunt.amqp.AmqpReceiver;
-import hunt.amqp.AmqpSender;
-import hunt.amqp.AmqpReceiverOptions;
-import hunt.amqp.AmqpSenderOptions;
+import hunt.amqp.client.AmqpReceiver;
+import hunt.amqp.client.AmqpSender;
+import hunt.amqp.client.AmqpReceiverOptions;
+import hunt.amqp.client.AmqpSenderOptions;
 
 
 /**
