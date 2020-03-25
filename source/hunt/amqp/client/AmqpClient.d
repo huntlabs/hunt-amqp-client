@@ -20,6 +20,7 @@ import hunt.amqp.client.AmqpReceiver;
 import hunt.amqp.client.AmqpReceiverOptions;
 import hunt.amqp.client.AmqpSenderOptions;
 
+import hunt.concurrency.Future;
 import hunt.Object;
 // import hunt.Functions;
 
@@ -69,7 +70,10 @@ interface AmqpClient {
   /**
    * Like {@link #connect(Handler)} but returns a {@code Future} of the asynchronous result
    */
-  //Future<AmqpConnection> connect();
+  Future!AmqpConnection connectAsync();
+
+  // ditto
+  AmqpConnection connect();
 
   /**
    * Closes the client.
