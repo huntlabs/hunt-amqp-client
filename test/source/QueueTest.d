@@ -14,11 +14,11 @@ import std.parallelism;
 
 void senderTask(AmqpSender sender)
 {
-    while(true)
+    // while(true)
     {
         sender.send(AmqpMessage.create().withBody("hello world").build());
-        logInfo("send complite");
-        Thread.sleep(500.msecs);
+        trace("send completed");
+        // Thread.sleep(500.msecs);
     }
 }
 
