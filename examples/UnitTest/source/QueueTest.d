@@ -37,31 +37,31 @@ void run()
      client.connect(new class Handler!AmqpConnection {
          void handle(AmqpConnection conn)
          {
-                if (conn is null)
+            if (conn is null)
+            {
+                logWarning("Unable to connect to the broker");
+                return;
+            }
+
+            logInfo("Connection succeeded");
+            conn.createSender("my-queue", new class Handler!AmqpSender{
+                void handle(AmqpSender sender)
                 {
-                    logWarning("Unable to connect to the broker");
-                    return;
-                }
-
-                logInfo("Connection succeeded");
-                conn.createSender("my-queue", new class Handler!AmqpSender{
-                    void handle(AmqpSender sender)
+                    if(sender is null)
                     {
-                            if(sender is null)
-                            {
-                                logWarning("Unable to create a sender");
-                                return;
-                            }
-
-                            auto t = task!(senderTask , AmqpSender)(sender);
-                            taskPool.put(t);
-                            //for (int i = 0 ; i < 100; ++i)
-                            //{
-                            //  sender.send(AmqpMessage.create().withBody("hello world").build());
-                            //  logInfo("send complite");
-                            //}
+                        logWarning("Unable to create a sender");
+                        return;
                     }
-                });
+
+                    auto t = task!(senderTask , AmqpSender)(sender);
+                    taskPool.put(t);
+                    //for (int i = 0 ; i < 100; ++i)
+                    //{
+                    //  sender.send(AmqpMessage.create().withBody("hello world").build());
+                    //  logInfo("send complite");
+                    //}
+                }
+            });
 
              //conn.createReceiver("my-queue", new class Handler!AmqpReceiver {
              //   void handle(AmqpReceiver recv)

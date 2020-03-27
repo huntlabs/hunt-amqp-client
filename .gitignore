@@ -18,3 +18,4 @@ hunt-amqp-client-test-*
 *.iml
 dub.selections.json
 .idea
+examples/UnitTest/unittest

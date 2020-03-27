@@ -1,0 +1,16 @@
+{
+	"name": "unittest",
+	"targetType": "executable",
+	"description": "A minimal D application.",
+	"copyright": "Copyright (C) 2015-2020, HuntLabs",
+	"homepage": "https://www.huntlabs.net",
+	"license": "Apache-2.0",
+	"dependencies": {
+		"hunt-amqp-client": {
+			"path": "../../"
+		}
+	},
+	"versions": [
+		"HUNT_DEBUG"
+	]
+}
