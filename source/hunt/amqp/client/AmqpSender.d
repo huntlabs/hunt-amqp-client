@@ -47,7 +47,6 @@ interface AmqpSender : WriteStream!AmqpMessage {
    * @param acknowledgementHandler the acknowledgement handler, must not be {@code null}
    * @return the current sender
    */
- // @Fluent
   AmqpSender sendWithAck(AmqpMessage message, Handler!Void acknowledgementHandler);
 
   /**

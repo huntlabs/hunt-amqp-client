@@ -248,7 +248,6 @@ interface AmqpMessage {
    * @return the current {@link AmqpMessage} object
    * @throws IllegalStateException is the current message is not a received message.
    */
- // @Fluent
   AmqpMessage accepted();
 
   /**
@@ -258,7 +257,6 @@ interface AmqpMessage {
    * @return the current {@link AmqpMessage} object
    * @throws IllegalStateException is the current message is not a received message.
    */
- // @Fluent
   AmqpMessage rejected();
 
   /**
@@ -268,7 +266,6 @@ interface AmqpMessage {
    * @return the current {@link AmqpMessage} object
    * @throws IllegalStateException is the current message is not a received message.
    */
- // @Fluent
   AmqpMessage released();
 
   /**
@@ -280,7 +277,6 @@ interface AmqpMessage {
    * @return the current {@link AmqpMessage} object
    * @throws IllegalStateException is the current message is not a received message.
    */
- // @Fluent
   AmqpMessage modified(bool didItFail, bool wasItDeliveredHere);
 
 

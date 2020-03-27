@@ -53,12 +53,11 @@ import std.range;
 
 class AmqpConnectionImpl : AmqpConnection {
 
-    //static  String PRODUCT = "vertx-amqp-client";
     // static  Symbol PRODUCT_KEY = Symbol.valueOf("product");
 
     static String PRODUCT() {
         __gshared String m;
-        return initOnce!(m)(new String("vertx-amqp-client"));
+        return initOnce!(m)(new String("hunt-amqp-client"));
     }
 
     static Symbol PRODUCT_KEY() {
@@ -93,39 +92,50 @@ class AmqpConnectionImpl : AmqpConnection {
     }
 
     // dfmt off
-    private void connect(AmqpClientImpl client, ProtonClient proton,Handler!AmqpConnection connectionHandler) {
+    private void connect(AmqpClientImpl client, ProtonClient proton, Handler!AmqpConnection connectionHandler) {
     //void connect(ProtonClientOptions options, string host, int port, string username, string password,
     //Handler!ProtonConnection connectionHandler);
-        proton
-            .connect(_options, _options.getHost(), _options.getPort(), _options.getUsername(), _options.getPassword(),
-                new class Handler!ProtonConnection {
-                    // Called on the connection context.
-                    void handle(ProtonConnection ar)
+        proton.connect(_options, _options.getHost(), _options.getPort(), 
+            _options.getUsername(), _options.getPassword(),
+            new class Handler!ProtonConnection {
+                // Called on the connection context.
+                void handle(ProtonConnection ar)
+                {
+                    if (ar !is null)
                     {
-                        if (ar !is null)
+                        if (connection !is null) {
+                            connectionHandler.handle(null);
+                            logError("Unable to connect - already holding a connection");
+                            return;
+                        }else
                         {
-                            if (connection !is null) {
-                                connectionHandler.handle(null);
-                                logError("Unable to connect - already holding a connection");
-                                return;
-                            }else
+                            connection = ar;
+                        }
+
+                        Map!(Symbol, Object) map = new HashMap!(Symbol,Object)();
+                        map.put(AmqpConnectionImpl.PRODUCT_KEY, AmqpConnectionImpl.PRODUCT);
+                        if (_options.getContainerId() !is null) {
+                            connection.setContainer(_options.getContainerId());
+                        }
+
+                        if (_options.getVirtualHost() !is null) {
+                            connection.setHostname(_options.getVirtualHost());
+                        }
+
+                        connection
+                        .setProperties(map)
+                        .disconnectHandler(new class Handler!ProtonConnection {
+                            void handle(ProtonConnection var1)
                             {
-                                connection = ar;
+                                try {
+                                    onDisconnect();
+                                } finally {
+                                    closed = true;
+                                }
                             }
-
-                            Map!(Symbol, Object) map = new HashMap!(Symbol,Object)();
-                            map.put(AmqpConnectionImpl.PRODUCT_KEY, AmqpConnectionImpl.PRODUCT);
-                            if (_options.getContainerId() !is null) {
-                                connection.setContainer(_options.getContainerId());
-                            }
-
-                            if (_options.getVirtualHost() !is null) {
-                                connection.setHostname(_options.getVirtualHost());
-                            }
-
-                            connection
-                            .setProperties(map)
-                            .disconnectHandler(new class Handler!ProtonConnection {
+                            })
+                            .closeHandler(new class Handler!ProtonConnection {
+                                // Not expected closing, consider it failed
                                 void handle(ProtonConnection var1)
                                 {
                                     try {
@@ -134,40 +144,31 @@ class AmqpConnectionImpl : AmqpConnection {
                                         closed = true;
                                     }
                                 }
-                                })
-                                .closeHandler(new class Handler!ProtonConnection {
-                                    // Not expected closing, consider it failed
-                                    void handle(ProtonConnection var1)
-                                    {
-                                        try {
-                                            onDisconnect();
-                                        } finally {
-                                            closed = true;
-                                        }
-                                    }
-                                })
-                                .openHandler(new class Handler!ProtonConnection {
-                                    void handle(ProtonConnection conn)
-                                    {
-                                        if (conn !is null) {
+                            })
+                            .openHandler(new class Handler!ProtonConnection {
+                                void handle(ProtonConnection conn)
+                                {
+                                    if (conn !is null) {
+                                        if(client !is null)
                                             client.register(this.outer.outer);
-                                            closed = false;
-                                            connectionHandler.handle(this.outer.outer);
-                                        } else {
-                                            closed = true;
-                                            connectionHandler.handle(null);
-                                        }
+                                        closed = false;
+                                        connectionHandler.handle(this.outer.outer);
+                                    } else {
+                                        closed = true;
+                                        connectionHandler.handle(null);
                                     }
-                                });
+                                }
+                            });
 
-                            connection.open();
-                            // }
-                        }else {
-                            connectionHandler.handle(null);
-                        }
+                        connection.open();
+                        // }
+                    } else {
+                        connectionHandler.handle(null);
                     }
-                });
-}
+                }
+            }
+        );
+    }
 
 // dfmt on
 
@@ -235,13 +236,13 @@ class AmqpConnectionImpl : AmqpConnection {
             .getRemoteState() == EndpointState.ACTIVE;
     }
 
-    AmqpConnection exceptionHandler(Handler!Throwable handler) {
+    override AmqpConnection exceptionHandler(Handler!Throwable handler) {
         this._exceptionHandler = handler;
         return this;
     }
 
     // dfmt off
-    AmqpConnection close(Handler!Void done) {
+    override AmqpConnection close(Handler!Void done) {
      // context.runOnContext(ignored -> {
             ProtonConnection actualConnection = connection;
             if (actualConnection is null || closed || (!isLocalOpen() && !isRemoteOpen())) {
@@ -307,7 +308,7 @@ class AmqpConnectionImpl : AmqpConnection {
         receivers.remove(receiver);
     }
 
-    AmqpConnection createDynamicReceiver(Handler!AmqpReceiver completionHandler) {
+    override AmqpConnection createDynamicReceiver(Handler!AmqpReceiver completionHandler) {
         return createReceiver(null, new AmqpReceiverOptions().setDynamic(true), completionHandler);
     }
 
@@ -317,7 +318,7 @@ class AmqpConnectionImpl : AmqpConnection {
     //  return promise.future();
     //}
 
-    AmqpConnection createReceiver(string address, Handler!AmqpReceiver completionHandler) {
+    override AmqpConnection createReceiver(string address, Handler!AmqpReceiver completionHandler) {
         assert(!address.empty(), "The address must not be `null`");
         assert(completionHandler !is null, "The completion handler must not be `null`");
 
@@ -335,7 +336,7 @@ class AmqpConnectionImpl : AmqpConnection {
     //  return promise.future();
     //}
 
-    AmqpConnection createReceiver(string address,
+    override AmqpConnection createReceiver(string address,
             AmqpReceiverOptions receiverOptions, Handler!AmqpReceiver completionHandler) {
         ProtonLinkOptions opts = new ProtonLinkOptions();
         AmqpReceiverOptions recOpts = receiverOptions is null ? new AmqpReceiverOptions()
@@ -389,7 +390,7 @@ class AmqpConnectionImpl : AmqpConnection {
         }
     }
 
-    AmqpConnection createSender(string address, Handler!AmqpSender completionHandler) {
+    override AmqpConnection createSender(string address, Handler!AmqpSender completionHandler) {
         // Objects.requireNonNull(address, "The address must be set");
         if (address is null || address.length == 0) {
             logError("The address must be set");
@@ -404,7 +405,7 @@ class AmqpConnectionImpl : AmqpConnection {
     //  return promise.future();
     //}
 
-    AmqpConnection createSender(string address, AmqpSenderOptions options,
+    override AmqpConnection createSender(string address, AmqpSenderOptions options,
             Handler!AmqpSender completionHandler) {
         if (address is null && !options.isDynamic()) {
             throw new IllegalArgumentException("Address must be set if the link is not dynamic");
@@ -444,7 +445,7 @@ class AmqpConnectionImpl : AmqpConnection {
     //  return promise.future();
     //}
 
-    AmqpConnection createAnonymousSender(Handler!AmqpSender completionHandler) {
+    override AmqpConnection createAnonymousSender(Handler!AmqpSender completionHandler) {
         // Objects.requireNonNull(completionHandler, "The completion handler must be set");
         if (completionHandler is null) {
             logError("The completion handler must be set");

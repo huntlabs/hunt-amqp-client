@@ -33,6 +33,9 @@ import hunt.Object;
 import hunt.Exceptions;
 import hunt.String;
 
+/**
+ * 
+ */
 class AmqpClientImpl : AmqpClient {
 
     private ProtonClient proton;
@@ -66,6 +69,7 @@ class AmqpClientImpl : AmqpClient {
     }
 
     Future!AmqpConnection connectAsync() {
+        // dfmt off
         auto promise = new FuturePromise!AmqpConnection();
 
         connect(new class Handler!AmqpConnection {
@@ -77,16 +81,19 @@ class AmqpClientImpl : AmqpClient {
             }
         });
 
+        // dfmt on
         return promise;
     }
 
     AmqpConnection connect() {
         Future!AmqpConnection promise = connectAsync();
-        version(HUNT_DEBUG) warning("try to get a result");
+        version (HUNT_AMQP_DEBUG)
+            warning("try to get a result");
         return promise.get(options.getIdleTimeout());
 
     }
 
+// dfmt off
     void close(Handler!Void handler) {
         //List<Future> actions = new ArrayList<>();
         //foreach (AmqpConnection connection ; connections) {
@@ -123,6 +130,7 @@ class AmqpClientImpl : AmqpClient {
     //}
 
     AmqpClient createReceiver(string address, Handler!AmqpReceiver completionHandler) {
+
         //return connect(res -> {
         //  if (res.failed()) {
         //    completionHandler.handle(res.mapEmpty());
@@ -133,89 +141,81 @@ class AmqpClientImpl : AmqpClient {
         return connect(new class Handler!AmqpConnection {
             void handle(AmqpConnection conn) {
                 if (conn !is null) {
-                    conn.createReceiver(address, completionHandler);} else {
-                        completionHandler.handle(null);}
-                    }
+                    conn.createReceiver(address, completionHandler);
+                } else {
+                    completionHandler.handle(null);
                 }
-);
             }
+        });
+    }
 
-            //Future<AmqpReceiver> createReceiver(String address) {
-            //  Promise<AmqpReceiver> promise = Promise.promise();
-            //  createReceiver(address, promise);
-            //  return promise.future();
-            //}
+    //Future<AmqpReceiver> createReceiver(String address) {
+    //  Promise<AmqpReceiver> promise = Promise.promise();
+    //  createReceiver(address, promise);
+    //  return promise.future();
+    //}
 
-            AmqpClient createReceiver(string address, AmqpReceiverOptions receiverOptions,
-                Handler!AmqpReceiver completionHandler) {
-                //return connect(res -> {
-                //  if (res.failed()) {
-                //    completionHandler.handle(res.mapEmpty());
-                //  } else {
-                //    res.result().createReceiver(address, receiverOptions, completionHandler);
-                //  }
-                //});
-                return connect(new class Handler!AmqpConnection {
-                    void handle(AmqpConnection conn) {
-                        if (conn !is null) {
-                            conn.createReceiver(address, receiverOptions, completionHandler);
-                        } else {
-                            completionHandler.handle(null);}
-                        }
-                    }
-);
+    AmqpClient createReceiver(string address, AmqpReceiverOptions receiverOptions,
+            Handler!AmqpReceiver completionHandler) {
+        return connect(new class Handler!AmqpConnection {
+            void handle(AmqpConnection conn) {
+                if (conn !is null) {
+                    conn.createReceiver(address, receiverOptions, completionHandler);
+                } else {
+                    completionHandler.handle(null);
                 }
+            }
+        });
+    }
 
-                //Future<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions receiverOptions) {
-                //  Promise<AmqpReceiver> promise = Promise.promise();
-                //  createReceiver(address, receiverOptions, promise);
-                //  return promise.future();
-                //}
+    //Future<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions receiverOptions) {
+    //  Promise<AmqpReceiver> promise = Promise.promise();
+    //  createReceiver(address, receiverOptions, promise);
+    //  return promise.future();
+    //}
 
-                AmqpClient createSender(string address, Handler!AmqpSender completionHandler) {
-                    return connect(new class Handler!AmqpConnection {
-                        void handle(AmqpConnection conn) {
-                            if (conn !is null) {
-                                conn.createSender(address, completionHandler);} else {
-                                    completionHandler.handle(null);}
-                                }
-                            }
-);
-                            //return connect(res -> {
-                            //  if (res.failed()) {
-                            //    completionHandler.handle(res.mapEmpty());
-                            //  } else {
-                            //    res.result().createSender(address, completionHandler);
-                            //  }
-                            //});
-                        }
+    AmqpClient createSender(string address, Handler!AmqpSender completionHandler) {
+        return connect(new class Handler!AmqpConnection {
+            void handle(AmqpConnection conn) {
+                if (conn !is null) {
+                    conn.createSender(address, completionHandler);
+                } else {
+                    completionHandler.handle(null);
+                }
+            }
+        });
+    }
 
-                        //Future<AmqpSender> createSender(String address) {
-                        //  Promise<AmqpSender> promise = Promise.promise();
-                        //  createSender(address, promise);
-                        //  return promise.future();
-                        //}
+    //Future<AmqpSender> createSender(String address) {
+    //  Promise<AmqpSender> promise = Promise.promise();
+    //  createSender(address, promise);
+    //  return promise.future();
+    //}
 
-                        AmqpClient createSender(string address, AmqpSenderOptions options,
-                        Handler!AmqpSender completionHandler) {
-                            return connect(new class Handler!AmqpConnection {
-                                void handle(AmqpConnection conn) {
-                                    if (conn !is null) {
-                                        conn.createSender(address, options, completionHandler);
-                                    } else {
-                                        completionHandler.handle(null);}
-                                    }
-                                }
-);
-                            }
+    AmqpClient createSender(string address, AmqpSenderOptions options,
+            Handler!AmqpSender completionHandler) {
+        return connect(new class Handler!AmqpConnection {
+            void handle(AmqpConnection conn) {
+                if (conn !is null) {
+                    conn.createSender(address, options, completionHandler);
+                } else {
+                    completionHandler.handle(null);
+                }
+            }
+        });
+    }
 
-                            //Future<AmqpSender> createSender(String address, AmqpSenderOptions options) {
-                            //  Promise<AmqpSender> promise = Promise.promise();
-                            //  createSender(address, options, promise);
-                            //  return promise.future();
-                            //}
-                            //
-                            void register(AmqpConnectionImpl connection) {
-                                connections.add(connection);
-                            }
-                        }
+// dfmt on
+
+    //Future<AmqpSender> createSender(String address, AmqpSenderOptions options) {
+    //  Promise<AmqpSender> promise = Promise.promise();
+    //  createSender(address, options, promise);
+    //  return promise.future();
+    //}
+    //
+    void register(AmqpConnectionImpl connection) {
+        synchronized(this) {
+            connections.add(connection);
+        }
+    }
+}

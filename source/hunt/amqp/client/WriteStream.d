@@ -68,12 +68,10 @@ interface  WriteStream(T) : StreamBase {
         }
     }
 
-    //@Fluent
     WriteStream!T setWriteQueueMaxSize(int var1);
 
     bool writeQueueFull();
 
-    //@Fluent
     WriteStream!T drainHandler(Handler!Void var1);
 
 }
