@@ -23,7 +23,8 @@ void senderTask(AmqpSender sender)
 }
 
 
-void main()
+
+void run()
 {
     AmqpClientOptions options = new AmqpClientOptions()
     .setHost("10.1.223.62")
