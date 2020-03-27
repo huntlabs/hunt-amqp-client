@@ -20,7 +20,6 @@ import hunt.Object;
 /**
  * AMQP Sender interface used to send messages.
  */
-//@VertxGen
 interface AmqpSender : WriteStream!AmqpMessage {
 
 

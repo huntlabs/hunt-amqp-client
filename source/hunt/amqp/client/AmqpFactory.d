@@ -39,8 +39,8 @@ class AmqpFactory : PooledObjectFactory!(AmqpConnection) {
     void destroyObject(IPooledObject obj) {
         auto pooledObj = cast(PooledObject!(AmqpConnection))obj;
         AmqpConnection conn = pooledObj.getObject();
-        if (conn !is null)
-            conn.close(null);
+        assert(conn !is null);
+        conn.close(null);
     }
 
     IPooledObject makeObject() {
@@ -69,8 +69,11 @@ class AmqpFactory : PooledObjectFactory!(AmqpConnection) {
     }
 
     bool validateObject(IPooledObject obj) {
-        version (HUNT_AMQP_DEBUG)
-            warning("Do nothing.");
-        return true;
+        trace("running here");
+        auto pooledObj = cast(PooledObject!(AmqpConnection))obj;
+        AmqpConnection conn = pooledObj.getObject();
+        assert(conn !is null);
+
+        return !conn.isClosed();
     }
 }

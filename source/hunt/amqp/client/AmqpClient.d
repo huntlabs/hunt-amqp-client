@@ -31,7 +31,6 @@ import hunt.Object;
  * AMQP Client entry point.
  * Use this interface to create an instance of {@link AmqpClient} and connect to a broker and server.
  */
-//@VertxGen
 interface AmqpClient {
 
     /**

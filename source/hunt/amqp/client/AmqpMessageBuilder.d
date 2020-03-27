@@ -31,7 +31,6 @@ import hunt.collection.Map;
  * <p>
  * Note that the body is set using {@code withBodyAs*} method depending on the passed type.
  */
-//@VertxGen
 interface AmqpMessageBuilder {
 
   /**

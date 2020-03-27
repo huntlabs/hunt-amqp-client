@@ -34,7 +34,6 @@ import std.json;
  * <p>
  * Note that the body is retrieved using {@code body*} method depending on the expected type.
  */
-//@VertxGen
 interface AmqpMessage {
 
   /**

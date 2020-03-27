@@ -26,7 +26,6 @@ import hunt.Object;
  * Interface used to consume AMQP message as a stream of message.
  * Back pressure is implemented using AMQP credits.
  */
-//@VertxGen
 interface AmqpReceiver : ReadStream!AmqpMessage {
 
 

@@ -25,8 +25,9 @@ import hunt.amqp.client.AmqpSenderOptions;
 /**
  * Once connected to the broker or router, you get a connection. This connection is automatically opened.
  */
-//@VertxGen
 interface AmqpConnection {
+
+    bool isClosed();
 
     /**
      * Registers a handler called on disconnection.

@@ -66,8 +66,8 @@ class AmqpConnectionImpl : AmqpConnection {
     }
 
     private AmqpClientOptions _options;
-    //private  AtomicBoolean closed = new AtomicBoolean();
-    private bool closed;
+    //private  AtomicBoolean _isClosed = new AtomicBoolean();
+    private bool _isClosed;
     //private  AtomicReference<ProtonConnection> connection = new AtomicReference<>();
     private ProtonConnection connection;
     // private  Context context;
@@ -89,6 +89,10 @@ class AmqpConnectionImpl : AmqpConnection {
         senders = new ArrayList!AmqpSender;
         receivers = new ArrayList!AmqpReceiver;
         connect(client, proton, connectionHandler);
+    }
+
+    bool isClosed() {
+        return _isClosed;
     }
 
     // dfmt off
@@ -130,7 +134,7 @@ class AmqpConnectionImpl : AmqpConnection {
                                 try {
                                     onDisconnect();
                                 } finally {
-                                    closed = true;
+                                    _isClosed = true;
                                 }
                             }
                             })
@@ -141,7 +145,7 @@ class AmqpConnectionImpl : AmqpConnection {
                                     try {
                                         onDisconnect();
                                     } finally {
-                                        closed = true;
+                                        _isClosed = true;
                                     }
                                 }
                             })
@@ -151,10 +155,10 @@ class AmqpConnectionImpl : AmqpConnection {
                                     if (conn !is null) {
                                         if(client !is null)
                                             client.register(this.outer.outer);
-                                        closed = false;
+                                        _isClosed = false;
                                         connectionHandler.handle(this.outer.outer);
                                     } else {
-                                        closed = true;
+                                        _isClosed = true;
                                         connectionHandler.handle(null);
                                     }
                                 }
@@ -245,13 +249,13 @@ class AmqpConnectionImpl : AmqpConnection {
     override AmqpConnection close(Handler!Void done) {
      // context.runOnContext(ignored -> {
             ProtonConnection actualConnection = connection;
-            if (actualConnection is null || closed || (!isLocalOpen() && !isRemoteOpen())) {
+            if (actualConnection is null || _isClosed || (!isLocalOpen() && !isRemoteOpen())) {
                 if (done !is null) {
                     done.handle(new String(""));
                 }
                 return null;
             } else {
-                closed = true;
+                _isClosed = true;
             }
 
             //Promise<Void> future = Promise.promise();
@@ -267,13 +271,14 @@ class AmqpConnectionImpl : AmqpConnection {
                         //  future.tryFail(getErrorMessage(con));
                          void handle(ProtonConnection var1)
                          {
-                             closed = true;
+                             _isClosed = true;
                          }
                         })
                         .closeHandler(new class Handler!ProtonConnection {
                             void handle(ProtonConnection var1)
                             {
-                                closed = true;
+                                infof("Close handling");
+                                _isClosed = true;
                                 //if (res.succeeded()) {
                                 //  future.tryComplete();
                                 //} else {
