@@ -60,9 +60,9 @@ interface AmqpConnection {
     AmqpConnection createReceiver(string address, Handler!AmqpReceiver completionHandler);
 
     /**
-     * Like {@link #createReceiver(String, Handler)} but returns a {@code Future} of the asynchronous result
+     * Like {@link #createReceiver(string, Handler)} but returns a {@code Future} of the asynchronous result
      */
-    //Future<AmqpReceiver> createReceiver(String address);
+    //Future<AmqpReceiver> createReceiver(string address);
 
     /**
      * Creates a receiver used to consumer messages from the given address.
@@ -77,9 +77,9 @@ interface AmqpConnection {
         Handler!AmqpReceiver completionHandler);
 
     /**
-     * Like {@link #createReceiver(String, AmqpReceiverOptions, Handler)} but returns a {@code Future} of the asynchronous result
+     * Like {@link #createReceiver(string, AmqpReceiverOptions, Handler)} but returns a {@code Future} of the asynchronous result
      */
- // Future<AmqpReceiver> createReceiver(String address, AmqpReceiverOptions receiverOptions);
+ // Future<AmqpReceiver> createReceiver(string address, AmqpReceiverOptions receiverOptions);
 
     /**
      * Creates a dynamic receiver. The address is provided by the broker and is available in the {@code completionHandler},
@@ -108,9 +108,9 @@ interface AmqpConnection {
     AmqpConnection createSender(string address, Handler!AmqpSender completionHandler);
 
     /**
-     * Like {@link #createSender(String, Handler)} but returns a {@code Future} of the asynchronous result
+     * Like {@link #createSender(string, Handler)} but returns a {@code Future} of the asynchronous result
      */
-//  Future<AmqpSender> createSender(String address);
+//  Future<AmqpSender> createSender(string address);
 
     /**
      * Creates a sender used to send messages to the given address. The address must be set. For anonymous sender, check
@@ -127,9 +127,9 @@ interface AmqpConnection {
         Handler!AmqpSender completionHandler);
 
     /**
-     * Like {@link #createSender(String, AmqpSenderOptions, Handler)} but returns a {@code Future} of the asynchronous result
+     * Like {@link #createSender(string, AmqpSenderOptions, Handler)} but returns a {@code Future} of the asynchronous result
      */
-    //Future<AmqpSender> createSender(String address, AmqpSenderOptions options);
+    //Future<AmqpSender> createSender(string address, AmqpSenderOptions options);
 
     /**
      * Creates an anonymous sender.

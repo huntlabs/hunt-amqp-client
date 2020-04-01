@@ -1,0 +1,33 @@
+{
+	"name": "simple-demo",
+	"description": "A simple demo for hunt-amqp-client.",
+	"copyright": "Copyright (C) 2019-2020, HuntLabs.net",
+	"homepage": "https://www.huntlabs.net",
+	"license": "Apache-2.0",
+	"dependencies": {
+		"hunt-amqp-client": {
+			"path": "../../"
+		}
+	},
+	"versions": [
+		"HUNT_DEBUG"
+	],
+	"configurations": [
+		{
+			"name": "sender",
+			"targetName": "sender",
+			"targetType": "executable",
+			"excludedSourceFiles": [
+				"source/receiver.d"
+			]
+		},
+		{
+			"name": "receiver",
+			"targetName": "receiver",
+			"targetType": "executable",
+			"excludedSourceFiles": [
+				"source/sender.d"
+			]
+		}
+	]
+}
