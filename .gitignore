@@ -1,21 +1,43 @@
-.dub
-docs.json
-__dummy.html
-docs/
-/hunt-amqp-client
-hunt-amqp-client.so
-hunt-amqp-client.dylib
-hunt-amqp-client.dll
-hunt-amqp-client.a
-hunt-amqp-client.lib
-hunt-amqp-client-test-*
-*.exe
+# Visual Studio Code
+#.vscode/
+.suo
+
+# Compiled Object files
 *.o
 *.obj
-*.lst
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
 *.a
 *.lib
-*.iml
-dub.selections.json
-.idea
+
+# Executables
+*.exe
+
+# DUB
+.dub
+dub.*.json
+dub.*.sdl
+docs.json
+__dummy.html
+
+# Code coverage
+*.lst
+
+# Examples
 examples/UnitTest/unittest
+examples/SimpleDemo/sender
+examples/SimpleDemo/receiver
+
+# others
+.DS_Store
+*.zip
+hunt-test-*
+test.config
+mixin_output.d
+
+
