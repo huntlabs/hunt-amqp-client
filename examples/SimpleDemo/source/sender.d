@@ -19,7 +19,7 @@ import std.format;
 import std.parallelism;
 import std.stdio;
 
-import hunt.concurrency.thread.ThreadEx;
+
 
 void main() {
 
@@ -36,7 +36,7 @@ void main() {
 
     logInfo("Connection succeeded");
     // dfmt off
-    conn.createSender("my-queue", new class Handler!AmqpSender{
+    conn.createSender("my-queue", new class Handler!AmqpSender {
         void handle(AmqpSender sender) {
             if(sender is null) {
                 logWarning("Unable to create a sender");
@@ -46,7 +46,7 @@ void main() {
 			warningf("active: %d, idle: %d, waiters: %d", 
 				pool.getNumActive(), pool.getNumIdle(), pool.getNumWaiters());
 
-			foreach(index; 0..50) {
+			foreach(index; 0..1) {
 				DateTime dt = cast(DateTime)Clock.currTime();
 				string message = format("[%d] Say hello at %s", index, dt.toSimpleString());
 				sender.send(AmqpMessage.create().withBody(message).build());
@@ -60,8 +60,8 @@ void main() {
             pool.returnObject(conn);
 
             // FIXME: Needing refactor or cleanup -@zhangxueping at 2020-03-27T17:24:05+08:00
-            // 
-            conn.close(null); // bug
+            // more tests
+            sender.close(null);
             warningf("active: %d, idle: %d, waiters: %d", 
                 pool.getNumActive(), pool.getNumIdle(), pool.getNumWaiters());
         }
