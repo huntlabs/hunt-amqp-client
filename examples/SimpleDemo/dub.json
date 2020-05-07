@@ -10,7 +10,7 @@
 		}
 	},
 	"versions": [
-		"HUNT_DEBUG"
+		"HUNT_DEBUG", "HUNT_AMQP_DEBUG"
 	],
 	"configurations": [
 		{
