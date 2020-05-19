@@ -318,7 +318,7 @@ class AmqpReceiverImpl : AmqpReceiver {
             if (autoAck) {
                 message.accepted();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logError("Unable to dispatch the AMQP message");
             version(HUNT_DEBUG) warning(e);
             if (autoAck) {
