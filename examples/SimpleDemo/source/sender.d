@@ -23,8 +23,11 @@ import std.stdio;
 
 void main() {
 
-    AmqpClientOptions options = new AmqpClientOptions().setHost("10.1.223.62")
-        .setPort(5672).setUsername("test").setPassword("123");
+    // AmqpClientOptions options = new AmqpClientOptions().setHost("10.1.223.62")
+    //     .setPort(5672).setUsername("test").setPassword("123");
+
+    AmqpClientOptions options = new AmqpClientOptions().setHost("121.40.16.40")
+        .setPort(5672).setUsername("admin").setPassword("RzNKT565Twof");    
 
     AmqpPool pool = new AmqpPool(options);
     AmqpConnection conn = pool.borrowObject();

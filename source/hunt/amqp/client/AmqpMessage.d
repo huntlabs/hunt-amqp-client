@@ -11,18 +11,9 @@
 module hunt.amqp.client.AmqpMessage;
 
 import hunt.amqp.client.impl.AmqpMessageBuilderImpl;
-//import hunt.codegen.annotations.Fluent;
-//import hunt.codegen.annotations.GenIgnore;
-//import hunt.codegen.annotations.VertxGen;
-//import hunt.core.buffer.Buffer;
-//import hunt.core.json.JsonArray;
-//import hunt.core.json.JsonObject;
 import hunt.proton.message.Message;
-import hunt.collection.Buffer;
-//import java.time.Instant;
 import hunt.collection.List;
 import hunt.collection.Map;
-//import hunt.collection.UUID;
 import hunt.amqp.client.AmqpMessageBuilder;
 import std.json;
 
