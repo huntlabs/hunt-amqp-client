@@ -73,19 +73,19 @@ void main(string[] agrs) {
 			trace("All message sent.");
             // pool.returnObject(conn);
 
-            // FIXME: Needing refactor or cleanup -@zhangxueping at 2020-03-27T17:24:05+08:00
-            // more tests
-            // sender.end(new class Handler!Void {
-            //     void handle(Void v) {
-            //         warning("Sender ended.");
-            //     }
-            // });
-
-            sender.close(new class Handler!Void {
-                void handle(Void v) {
-                    warning("Sender closed.");
+            sender.end( (VoidAsyncResult ar) {
+                if(ar.succeeded()) {
+                    warning("Sender ended.");
+                } else {
+                    Throwable th = ar.cause();
+                    errorf("Error occured: %s", th.msg);
+                    warning(th);
                 }
             });
+
+            // sender.close( (ar) {
+            //     warning("Sender closed.");
+            // });
 
             // conn.close(new class Handler!Void {
             //     void handle(Void v) {

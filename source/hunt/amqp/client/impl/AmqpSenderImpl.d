@@ -20,12 +20,14 @@ import hunt.amqp.Handler;
 import hunt.amqp.client.impl.AmqpConnectionImpl;
 import hunt.proton.amqp.transport.DeliveryState;
 
+import hunt.concurrency.Future;
+import hunt.concurrency.FuturePromise;
 import hunt.Object;
 import hunt.logging;
 import hunt.net.AsyncResult;
 import hunt.String;
 import hunt.Exceptions;
-
+import std.format;
 
 /**
  * 
@@ -179,7 +181,7 @@ class AmqpSenderImpl : AmqpSender {
         return doSend(message, null);
     }
 
-    private AmqpSender doSend(AmqpMessage message, Handler!Void acknowledgmentHandler) {
+    private AmqpSender doSend(AmqpMessage message, VoidAsyncHandler acknowledgmentHandler) {
         AmqpMessage updated;
         if (message.address() is null) {
             updated = AmqpMessage.create(message).address(address()).build();
@@ -188,77 +190,46 @@ class AmqpSenderImpl : AmqpSender {
         }
 
 
-
         Handler!ProtonDelivery ack = new class Handler!ProtonDelivery{
             void handle(ProtonDelivery delivery)
             {
-                Handler!Void handler = acknowledgmentHandler;
+                VoidAsyncHandler handler = acknowledgmentHandler;
                 if (acknowledgmentHandler is null) {
-                    handler = new class Handler!Void{
-                        void handle(Void v)
-                        {
-                            if(v is null)
-                            {
-                                logWarning("Message rejected by remote peer");
-                            }
-                        }
+                    handler = (VoidAsyncResult ar) {
+                        if (ar.failed()) {
+                            Throwable th = ar.cause();
+                            warningf("Message rejected by remote peer: %s", th.msg);
+                            version(HUNT_DEBUG) warning(th);
+                        } 
                     };
                 }
+
                 switch (delivery.getRemoteState().getType()) {
                     case DeliveryStateType.Rejected:
-                     // handler.handle(Future.failedFuture("message rejected (REJECTED"));
-                        logInfo("message rejected (REJECTED");
-                        handler.handle(null);
+                        version(HUNT_DEBUG) trace("message rejected (REJECTED)");
+                        handler(failedResult!(Void)(new Exception("message rejected (REJECTED)")));
                         break;
                     case DeliveryStateType.Modified:
-                        //handler.handle(Future.failedFuture("message rejected (MODIFIED)"));
-                        logInfo("message rejected (MODIFIED)");
-                        handler.handle(null);
+                        version(HUNT_DEBUG) trace("message rejected (MODIFIED)");
+                        handler(failedResult!(Void)(new Exception("message rejected (MODIFIED)")));
                         break;
                     case DeliveryStateType.Released:
-                     // handler.handle(Future.failedFuture("message rejected (RELEASED)"));
-                        logInfo("message rejected (RELEASED)");
-                        handler.handle(null);
+                        version(HUNT_DEBUG) trace("message rejected (RELEASED)");
+                        handler(failedResult!(Void)(new Exception("message rejected (RELEASED)")));
                         break;
                     case DeliveryStateType.Accepted:
-                        handler.handle(new String("Accepted"));
+                        version(HUNT_DEBUG) trace("Accepted");
+                        handler(succeededResult!(Void)(null));
                         break;
+
                     default:
-                        //handler.handle(Future.failedFuture("Unsupported delivery type: " + delivery.getRemoteState().getType()));
-                        logError("Unsupported delivery type %d",delivery.getRemoteState().getType());
-                        handler.handle(null);
+                        string msg = format("Unsupported delivery type %d", delivery.getRemoteState().getType());
+                        logError(msg);
+
+                        handler(failedResult!(Void)(new Exception(msg)));
                 }
             }
         };
-
-
-        //Handler!ProtonDelivery ack = delivery -> {
-        //  Handler<AsyncResult<Void>> handler = acknowledgmentHandler;
-        //  if (acknowledgmentHandler is null) {
-        //    handler = ar -> {
-        //      if (ar.failed()) {
-        //        LOGGER.warn("Message rejected by remote peer", ar.cause());
-        //      }
-        //    };
-        //  }
-        //
-        //  switch (delivery.getRemoteState().getType()) {
-        //    case Rejected:
-        //      handler.handle(Future.failedFuture("message rejected (REJECTED"));
-        //      break;
-        //    case Modified:
-        //      handler.handle(Future.failedFuture("message rejected (MODIFIED)"));
-        //      break;
-        //    case Released:
-        //      handler.handle(Future.failedFuture("message rejected (RELEASED)"));
-        //      break;
-        //    case Accepted:
-        //      handler.handle(Future.succeededFuture());
-        //      break;
-        //    default:
-        //      handler.handle(Future.failedFuture("Unsupported delivery type: " + delivery.getRemoteState().getType()));
-        //  }
-        //};
 
         synchronized (this) {
             // Update the credit tracking. We only need to adjust this here because the sends etc may not be on the context
@@ -308,29 +279,32 @@ class AmqpSenderImpl : AmqpSender {
     }
 
 
-    //Future<Void> write(AmqpMessage data) {
-    //  Promise<Void> promise = Promise.promise();
-    //  doSend(data, promise);
-    //  return promise.future();
-    //}
+    Future!Void write(AmqpMessage data) {
+        FuturePromise!Void f = new FuturePromise!Void();
+        doSend(data, (VoidAsyncResult ar) {
+            if (ar.succeeded()) {
+                f.succeeded(ar.result());
+            } else {
+                f.failed(cast(Exception) ar.cause());
+            }
+        });
 
-
-    void write(AmqpMessage data, Handler!Void handler) {
-        doSend(data, handler);
+        return f;        
     }
 
+    void write(AmqpMessage data, VoidAsyncHandler handler) {
+        doSend(data, handler);
+    }
 
     AmqpSender setWriteQueueMaxSize(int maxSize) {
         // No-op, available sending credit is controlled by recipient peer in AMQP 1.0.
         return this;
     }
 
-
     override
-    void end(Handler!Void handler) {
+    void end(VoidAsyncHandler handler) {
         close(handler);
     }
-
 
     AmqpSender drainHandler(Handler!Void handler) {
         _drainHandler = handler;
@@ -338,7 +312,7 @@ class AmqpSenderImpl : AmqpSender {
     }
 
 
-    AmqpSender sendWithAck(AmqpMessage message, Handler!Void acknowledgementHandler) {
+    AmqpSender sendWithAck(AmqpMessage message, VoidAsyncHandler acknowledgementHandler) {
         return doSend(message, acknowledgementHandler);
     }
 
@@ -350,12 +324,12 @@ class AmqpSenderImpl : AmqpSender {
     //}
 
 
-    void close(Handler!Void handler) {
+    void close(VoidAsyncHandler handler) {
         
-        Handler!Void actualHandler;
+        VoidAsyncHandler actualHandler;
         if (handler is null) {
-            actualHandler = new class Handler!Void {
-                void handle(Void var1) { /* NOOP */ }
+            actualHandler = (VoidAsyncResult ar) {
+                /* NOOP */
             };
         } else {
             actualHandler = handler;
@@ -363,7 +337,7 @@ class AmqpSenderImpl : AmqpSender {
 
         synchronized (this) {
             if (closed) {
-                actualHandler.handle(new String(""));
+                actualHandler(succeededResult!(Void)(null));
                 return;
             }
             closed = true;
@@ -375,26 +349,32 @@ class AmqpSenderImpl : AmqpSender {
             try {
                 sender.closeHandler(new class Handler!ProtonSender{
                     void handle(ProtonSender var1) {
-                        if(actualHandler !is null) {
-                            actualHandler.handle(null);
-                        }
+                        actualHandler(succeededResult!(Void)(null));
                     }
                 }).close();
             } catch (Exception e) {
                 // Somehow closed remotely
-                actualHandler.handle(null);
+                actualHandler(failedResult!(Void)(e));
             }
         } else {
-            actualHandler.handle(new String(""));
+            actualHandler(succeededResult!(Void)(null));
         }
     }
 
 
-    //Future<Void> close() {
-    //  Promise<Void> promise = Promise.promise();
-    //  close(promise);
-    //  return promise.future();
-    //}
+    Future!Void close() {
+
+        FuturePromise!Void f = new FuturePromise!Void();
+        close((VoidAsyncResult ar) {
+            if (ar.succeeded()) {
+                f.succeeded(ar.result());
+            } else {
+                f.failed(cast(Exception) ar.cause());
+            }
+        });
+
+        return f; 
+    }
 
 
     string address() {

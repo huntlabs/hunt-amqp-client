@@ -14,8 +14,10 @@ import hunt.amqp.Handler;
 import hunt.amqp.client.WriteStream;
 import hunt.amqp.client.AmqpMessage;
 import hunt.amqp.client.AmqpConnection;
+
 import hunt.String;
 import hunt.Object;
+import hunt.concurrency.Future;
 
 /**
  * AMQP Sender interface used to send messages.
@@ -46,7 +48,7 @@ interface AmqpSender : WriteStream!AmqpMessage {
    * @param acknowledgementHandler the acknowledgement handler, must not be {@code null}
    * @return the current sender
    */
-  AmqpSender sendWithAck(AmqpMessage message, Handler!Void acknowledgementHandler);
+  AmqpSender sendWithAck(AmqpMessage message, VoidAsyncHandler acknowledgementHandler);
 
   /**
    * Like {@link #sendWithAck(AmqpMessage, Handler)} but returns a {@code Future} of the asynchronous result
@@ -58,12 +60,12 @@ interface AmqpSender : WriteStream!AmqpMessage {
    *
    * @param handler called when the sender has been closed, must not be {@code null}
    */
-  void close(Handler!Void handler);
+  void close(VoidAsyncHandler handler);
 
   /**
    * Like {@link #close(Handler)} but returns a {@code Future} of the asynchronous result
    */
-  //Future<Void> close();
+  Future!Void close();
 
   /**
    * @return the configured address.
