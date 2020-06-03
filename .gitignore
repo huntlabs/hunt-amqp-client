@@ -32,6 +32,7 @@ __dummy.html
 examples/UnitTest/unittest
 examples/SimpleDemo/sender
 examples/SimpleDemo/receiver
+examples/SimpleDemo/core
 
 # others
 .DS_Store

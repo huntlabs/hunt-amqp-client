@@ -9,10 +9,13 @@ import hunt.amqp.client.AmqpPool;
 import hunt.amqp.Handler;
 import hunt.amqp.client.AmqpReceiver;
 import hunt.amqp.client.AmqpConnection;
+import hunt.amqp.client.AmqpReceiverOptions;
 
 import hunt.logging.ConsoleLogger;
 import core.thread;
+import std.algorithm;
 import std.parallelism;
+import std.string;
 
 void senderTask(AmqpSender sender) {
     // while(true)
@@ -23,14 +26,20 @@ void senderTask(AmqpSender sender) {
     }
 }
 
-void main() {
+void main(string[] agrs) {
 
     // dfmt off
+    // AmqpClientOptions options = new AmqpClientOptions()
+    //     .setHost("10.1.223.62")
+    //     .setPort(5672)
+    //     .setUsername("test")
+    //     .setPassword("123");
+
     AmqpClientOptions options = new AmqpClientOptions()
-        .setHost("10.1.223.62")
+        .setHost("10.1.222.110")
         .setPort(5672)
-        .setUsername("test")
-        .setPassword("123");
+        .setUsername("admin")
+        .setPassword("admin");    
 
     AmqpPool pool = new AmqpPool(options);
     AmqpConnection conn = pool.borrowObject();
@@ -41,8 +50,11 @@ void main() {
     }
 
     logInfo("Connection succeeded");
+
+    AmqpReceiverOptions receiverOptions = new AmqpReceiverOptions();
+    receiverOptions.setAutoAcknowledgement(false);
     
-    conn.createReceiver("my-queue", new class Handler!AmqpReceiver {
+    conn.createReceiver("my-queue",  new class Handler!AmqpReceiver {
         void handle(AmqpReceiver recv) {    
             if (recv is null) {
                 logWarning("Unable to create a receiver");
@@ -53,7 +65,27 @@ void main() {
             recv.handler(new class Handler!AmqpMessage {
                 void handle(AmqpMessage msg) {
                     counter++;
-                    tracef("%d => Received: %s", counter, msg.bodyAsString());
+
+                    string content = msg.bodyAsString();
+
+                    if(content.canFind("[2]")) {
+                        if(counter < 10) {
+
+                            warningf("%d => modified: %s", counter, content);
+                            msg.modified(true, false);
+                            // msg.rejected();
+
+                            // warningf("%d => released: %s", counter, content);
+                            // msg.released();
+                        } else {
+                            infof("%d => accepted forcedly: %s", counter, content);
+                            msg.accepted();
+                        }
+                    } else {
+                        tracef("%d => accepted: %s", counter, content);
+                        msg.accepted();
+                    }
+                    // msg.rejected();
                 }
             });          
         }

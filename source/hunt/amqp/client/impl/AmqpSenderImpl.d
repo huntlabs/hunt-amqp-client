@@ -13,16 +13,19 @@ module hunt.amqp.client.impl.AmqpSenderImpl;
 import hunt.amqp.client.AmqpConnection;
 import hunt.amqp.client.AmqpMessage;
 import hunt.amqp.client.AmqpSender;
-import hunt.proton.amqp.transport.DeliveryState;
 import hunt.amqp.ProtonDelivery;
 import hunt.amqp.ProtonSender;
 import hunt.amqp.impl.ProtonSenderImpl;
 import hunt.amqp.Handler;
 import hunt.amqp.client.impl.AmqpConnectionImpl;
+import hunt.proton.amqp.transport.DeliveryState;
+
 import hunt.Object;
 import hunt.logging;
+import hunt.net.AsyncResult;
 import hunt.String;
 import hunt.Exceptions;
+
 
 /**
  * 
@@ -348,10 +351,12 @@ class AmqpSenderImpl : AmqpSender {
 
 
     void close(Handler!Void handler) {
+        
         Handler!Void actualHandler;
         if (handler is null) {
-            implementationMissing(false);
-         // actualHandler = x -> { /* NOOP */ };
+            actualHandler = new class Handler!Void {
+                void handle(Void var1) { /* NOOP */ }
+            };
         } else {
             actualHandler = handler;
         }
@@ -364,43 +369,25 @@ class AmqpSenderImpl : AmqpSender {
             closed = true;
         }
 
-
-        //actualHandler.handle(v.mapEmpty()
         _connection.unregister(this);
+
         if (sender.isOpen()) {
-                try {
-                    sender
-                    .closeHandler(new class Handler!ProtonSender{
-                        void handle(ProtonSender var1)
-                        {
-                            if(actualHandler !is null) {
-                                actualHandler.handle(null);
-                            }
+            try {
+                sender.closeHandler(new class Handler!ProtonSender{
+                    void handle(ProtonSender var1) {
+                        if(actualHandler !is null) {
+                            actualHandler.handle(null);
                         }
-                    }).close();
-                } catch (Exception e) {
-                    // Somehow closed remotely
-                    actualHandler.handle(null);
-                }
-            } else {
-                     actualHandler.handle(new String(""));
-                 }
+                    }
+                }).close();
+            } catch (Exception e) {
+                // Somehow closed remotely
+                actualHandler.handle(null);
+            }
+        } else {
+            actualHandler.handle(new String(""));
         }
-        //connection.runWithTrampoline(x -> {
-        //  if (sender.isOpen()) {
-        //    try {
-        //      sender
-        //        .closeHandler(v -> actualHandler.handle(v.mapEmpty()))
-        //        .close();
-        //    } catch (Exception e) {
-        //      // Somehow closed remotely
-        //      actualHandler.handle(Future.failedFuture(e));
-        //    }
-        //  } else {
-        //    actualHandler.handle(Future.succeededFuture());
-        //  }
-        //});
-    //}
+    }
 
 
     //Future<Void> close() {
