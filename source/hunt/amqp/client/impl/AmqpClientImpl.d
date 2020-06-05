@@ -25,10 +25,12 @@ import hunt.amqp.client.AmqpReceiverOptions;
 import hunt.amqp.client.AmqpSenderOptions;
 
 import hunt.Assert;
+import hunt.concurrency.CompletableFuture;
 import hunt.concurrency.Future;
 import hunt.concurrency.FuturePromise;
 import hunt.concurrency.Promise;
 import hunt.logging;
+import hunt.net.AsyncResult;
 import hunt.Object;
 import hunt.Exceptions;
 import hunt.String;
@@ -55,7 +57,7 @@ class AmqpClientImpl : AmqpClient {
         this.connections = new ArrayList!AmqpConnection;
     }
 
-    AmqpClient connect(Handler!AmqpConnection connectionHandler) {
+    AmqpClient connect(AsyncResultHandler!AmqpConnection connectionHandler) {
         if (options.getHost() is null) {
             logError("Host must be set");
         }
@@ -72,13 +74,21 @@ class AmqpClientImpl : AmqpClient {
         // dfmt off
         auto promise = new FuturePromise!AmqpConnection();
 
-        connect(new class Handler!AmqpConnection {
-            void handle(AmqpConnection conn) {
-                if (conn is null) 
-                    promise.failed(new Exception("Unable to connect to the broker."));
-                else
-                    promise.succeeded(conn);
+        connect((ar) {
+            if(ar.succeeded()) {
+                    promise.succeeded(ar.result());
+            } else {
+                Throwable th = ar.cause();
+                warning(th.msg);
+                version(HUNT_DEWBUG) warning(th);
+                promise.failed(new Exception("Unable to connect to the broker."));
             }
+            // void handle(AmqpConnection conn) {
+            //     if (conn is null) 
+            //         promise.failed(new Exception("Unable to connect to the broker."));
+            //     else
+            //         promise.succeeded(conn);
+            // }
         });
 
         // dfmt on
@@ -94,33 +104,47 @@ class AmqpClientImpl : AmqpClient {
     }
 
 // dfmt off
-    void close(Handler!Void handler) {
-        //List<Future> actions = new ArrayList<>();
-        //foreach (AmqpConnection connection ; connections) {
-        //  Promise<Void> future = Promise.promise();
-        //  connection.close(future);
-        //  actions.add(future.future());
-        //}
-        //
-        //CompositeFuture.join(actions).setHandler(done -> {
-        //  connections.clear();
-        //  if (mustCloseVertxOnClose) {
-        //    vertx.close(x -> {
-        //      if (done.succeeded() && x.succeeded()) {
-        //        if (handler !is null) {
-        //          handler.handle(Future.succeededFuture());
-        //        }
-        //      } else {
-        //        if (handler !is null) {
-        //          handler.handle(Future.failedFuture(done.failed() ? done.cause() : x.cause()));
-        //        }
-        //      }
-        //    });
-        //  } else if (handler !is null) {
-        //    handler.handle(done.mapEmpty());
-        //  }
-        //});
-        implementationMissing(false);
+    void close(AsyncResultHandler!Void handler) {
+        if(handler is null) return;
+
+        Future!(void)[] actions;
+        foreach (AmqpConnection connection ; connections) {
+            FuturePromise!(void) future = new FuturePromise!void();
+            connection.close((ar) {
+                if (ar.succeeded()) {
+                    future.succeeded();
+                } else {
+                    future.failed(cast(Exception) ar.cause());
+                }
+            });
+
+            actions ~= future;
+        }
+
+        CompletableFuture!bool cf = supplyAsync!(bool)(() {
+            foreach(Future!void f; actions) {
+                try {
+                    f.get();
+                } catch(Throwable th) {
+                    warning(th.msg);
+                    version(HUNT_DEBUG) warning(th);
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        cf.thenAccept((done) {
+            version(HUNT_DEBUG) info("All connections closed.");
+            connections = null;
+            if(done) {
+                handler(succeededResult!(Void)(null));
+            } else {
+                Exception ex = new Exception("Failed to close the connections. See the log for more details.");
+                handler(failedResult!(Void)(ex));
+            }
+        });
     }
 
     //Future<Void> close() {
@@ -130,23 +154,23 @@ class AmqpClientImpl : AmqpClient {
     //}
 
     AmqpClient createReceiver(string address, Handler!AmqpReceiver completionHandler) {
-
-        //return connect(res -> {
-        //  if (res.failed()) {
-        //    completionHandler.handle(res.mapEmpty());
-        //  } else {
-        //    res.result().createReceiver(address, completionHandler);
-        //  }
-        //});
-        return connect(new class Handler!AmqpConnection {
-            void handle(AmqpConnection conn) {
-                if (conn !is null) {
-                    conn.createReceiver(address, completionHandler);
-                } else {
-                    completionHandler.handle(null);
-                }
-            }
+        return connect((res)  {
+         if (res.failed()) {
+           completionHandler.handle(null);
+         } else {
+           res.result().createReceiver(address, completionHandler);
+         }
         });
+
+        // return connect(new class Handler!AmqpConnection {
+        //     void handle(AmqpConnection conn) {
+        //         if (conn !is null) {
+        //             conn.createReceiver(address, completionHandler);
+        //         } else {
+        //             completionHandler.handle(null);
+        //         }
+        //     }
+        // });
     }
 
     //Future<AmqpReceiver> createReceiver(String address) {
@@ -157,14 +181,20 @@ class AmqpClientImpl : AmqpClient {
 
     AmqpClient createReceiver(string address, AmqpReceiverOptions receiverOptions,
             Handler!AmqpReceiver completionHandler) {
-        return connect(new class Handler!AmqpConnection {
-            void handle(AmqpConnection conn) {
-                if (conn !is null) {
-                    conn.createReceiver(address, receiverOptions, completionHandler);
-                } else {
-                    completionHandler.handle(null);
-                }
+        return connect((res) {
+            if(res.succeeded()) {
+                res.result().createReceiver(address, receiverOptions, completionHandler);
+            } else {
+                completionHandler.handle(null);
             }
+
+            // void handle(AmqpConnection conn) {
+            //     if (conn !is null) {
+            //         conn.createReceiver(address, receiverOptions, completionHandler);
+            //     } else {
+            //         completionHandler.handle(null);
+            //     }
+            // }
         });
     }
 
@@ -175,13 +205,15 @@ class AmqpClientImpl : AmqpClient {
     //}
 
     AmqpClient createSender(string address, Handler!AmqpSender completionHandler) {
-        return connect(new class Handler!AmqpConnection {
-            void handle(AmqpConnection conn) {
-                if (conn !is null) {
-                    conn.createSender(address, completionHandler);
-                } else {
-                    completionHandler.handle(null);
-                }
+        return connect((ar) {
+            if(ar.succeeded()) {
+                auto conn = ar.result();
+                conn.createSender(address, completionHandler);
+            } else {
+                Throwable th = ar.cause();
+                warning(th.msg);
+                version(HUNT_DEWBUG) warning(th);
+                completionHandler.handle(null);
             }
         });
     }
@@ -194,13 +226,16 @@ class AmqpClientImpl : AmqpClient {
 
     AmqpClient createSender(string address, AmqpSenderOptions options,
             Handler!AmqpSender completionHandler) {
-        return connect(new class Handler!AmqpConnection {
-            void handle(AmqpConnection conn) {
-                if (conn !is null) {
-                    conn.createSender(address, options, completionHandler);
-                } else {
-                    completionHandler.handle(null);
-                }
+
+        return connect((ar) {
+            if(ar.succeeded()) {
+                auto conn = ar.result();
+                conn.createSender(address, options, completionHandler);
+            } else {
+                Throwable th = ar.cause();
+                warning(th.msg);
+                version(HUNT_DEWBUG) warning(th);
+                completionHandler.handle(null);
             }
         });
     }

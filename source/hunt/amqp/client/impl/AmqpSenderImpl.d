@@ -206,19 +206,19 @@ class AmqpSenderImpl : AmqpSender {
 
                 switch (delivery.getRemoteState().getType()) {
                     case DeliveryStateType.Rejected:
-                        version(HUNT_DEBUG) trace("message rejected (REJECTED)");
+                        version(HUNT_AMQP_DEBUG) trace("message rejected (REJECTED)");
                         handler(failedResult!(Void)(new Exception("message rejected (REJECTED)")));
                         break;
                     case DeliveryStateType.Modified:
-                        version(HUNT_DEBUG) trace("message rejected (MODIFIED)");
+                        version(HUNT_AMQP_DEBUG) trace("message rejected (MODIFIED)");
                         handler(failedResult!(Void)(new Exception("message rejected (MODIFIED)")));
                         break;
                     case DeliveryStateType.Released:
-                        version(HUNT_DEBUG) trace("message rejected (RELEASED)");
+                        version(HUNT_AMQP_DEBUG) trace("message rejected (RELEASED)");
                         handler(failedResult!(Void)(new Exception("message rejected (RELEASED)")));
                         break;
                     case DeliveryStateType.Accepted:
-                        version(HUNT_DEBUG) trace("Accepted");
+                        version(HUNT_AMQP_DEBUG) trace("Accepted");
                         handler(succeededResult!(Void)(null));
                         break;
 

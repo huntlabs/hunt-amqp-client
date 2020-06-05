@@ -42,12 +42,16 @@ import hunt.collection.List;
 import hunt.collection.Map;
 import hunt.collection.ArrayList;
 
-import hunt.logging;
+import hunt.concurrency.Future;
+import hunt.concurrency.FuturePromise;
 import hunt.Exceptions;
+import hunt.logging;
+import hunt.net.AsyncResult;
 import hunt.Object;
 
 import hunt.String;
 import std.concurrency : initOnce;
+import core.atomic;
 import std.uni;
 import std.range;
 
@@ -67,7 +71,8 @@ class AmqpConnectionImpl : AmqpConnection {
 
     private AmqpClientOptions _options;
     //private  AtomicBoolean _isClosed = new AtomicBoolean();
-    private bool _isClosed;
+    private shared bool _isClosing;
+    private shared bool _isClosed;
     //private  AtomicReference<ProtonConnection> connection = new AtomicReference<>();
     private ProtonConnection connection;
     // private  Context context;
@@ -80,12 +85,13 @@ class AmqpConnectionImpl : AmqpConnection {
     private Handler!Throwable _exceptionHandler;
 
     this(AmqpClientImpl client, AmqpClientOptions options, ProtonClient proton,
-            Handler!AmqpConnection connectionHandler) {
+            AsyncResultHandler!AmqpConnection connectionHandler) {
 
         assert(proton !is null, "proton cannot be `null`");
         assert(connectionHandler !is null, "connection handler cannot be `null`");
 
-        this._options = options;
+        _isClosing = false;
+        _options = options;
         senders = new ArrayList!AmqpSender;
         receivers = new ArrayList!AmqpReceiver;
         connect(client, proton, connectionHandler);
@@ -96,9 +102,9 @@ class AmqpConnectionImpl : AmqpConnection {
     }
 
     // dfmt off
-    private void connect(AmqpClientImpl client, ProtonClient proton, Handler!AmqpConnection connectionHandler) {
-    //void connect(ProtonClientOptions options, string host, int port, string username, string password,
-    //Handler!ProtonConnection connectionHandler);
+    private void connect(AmqpClientImpl client, ProtonClient proton, 
+        AsyncResultHandler!AmqpConnection connectionHandler) {
+
         proton.connect(_options, _options.getHost(), _options.getPort(), 
             _options.getUsername(), _options.getPassword(),
             new class Handler!ProtonConnection {
@@ -108,8 +114,11 @@ class AmqpConnectionImpl : AmqpConnection {
                     if (ar !is null)
                     {
                         if (connection !is null) {
-                            connectionHandler.handle(null);
-                            logError("Unable to connect - already holding a connection");
+                            string msg = "Unable to connect - already holding a connection";
+                            error(msg);
+                            if(connectionHandler !is null) {
+                                connectionHandler(failedResult!AmqpConnection(new Exception(msg)));
+                            }
                             return;
                         }else
                         {
@@ -128,25 +137,19 @@ class AmqpConnectionImpl : AmqpConnection {
 
                         connection
                         .setProperties(map)
-                        .disconnectHandler(new class Handler!ProtonConnection {
-                            void handle(ProtonConnection var1)
-                            {
+                        .disconnectHandler((ProtonConnection var1) {
                                 try {
                                     onDisconnect();
                                 } finally {
                                     _isClosed = true;
                                 }
-                            }
                             })
-                            .closeHandler(new class Handler!ProtonConnection {
+                            .closeHandler( (x) {
                                 // Not expected closing, consider it failed
-                                void handle(ProtonConnection var1)
-                                {
-                                    try {
-                                        onDisconnect();
-                                    } finally {
-                                        _isClosed = true;
-                                    }
+                                try {
+                                    onDisconnect();
+                                } finally {
+                                    _isClosed = true;
                                 }
                             })
                             .openHandler(new class Handler!ProtonConnection {
@@ -156,10 +159,10 @@ class AmqpConnectionImpl : AmqpConnection {
                                         if(client !is null)
                                             client.register(this.outer.outer);
                                         _isClosed = false;
-                                        connectionHandler.handle(this.outer.outer);
+                                        connectionHandler(succeededResult!(AmqpConnection)(this.outer.outer));
                                     } else {
                                         _isClosed = true;
-                                        connectionHandler.handle(null);
+                                        connectionHandler(failedResult!(AmqpConnection)(null));
                                     }
                                 }
                             });
@@ -167,7 +170,7 @@ class AmqpConnectionImpl : AmqpConnection {
                         connection.open();
                         // }
                     } else {
-                        connectionHandler.handle(null);
+                        connectionHandler(failedResult!(AmqpConnection)(null));
                     }
                 }
             }
@@ -188,6 +191,8 @@ class AmqpConnectionImpl : AmqpConnection {
                 h = _exceptionHandler;
             }
         }
+
+        trace("xxxxxxxxxxxxx");
 
         if (h !is null) {
             string message = getErrorMessage(conn);
@@ -246,53 +251,58 @@ class AmqpConnectionImpl : AmqpConnection {
     }
 
     // dfmt off
-    override AmqpConnection close(Handler!Void done) {
-     // context.runOnContext(ignored -> {
-            ProtonConnection actualConnection = connection;
-            if (actualConnection is null || _isClosed || (!isLocalOpen() && !isRemoteOpen())) {
-                if (done !is null) {
-                    done.handle(new String(""));
-                }
-                return null;
-            } else {
-                _isClosed = true;
+    override AmqpConnection close(AsyncResultHandler!Void done) {
+        ProtonConnection actualConnection = connection;
+        if (actualConnection is null || _isClosed || _isClosing || (!isLocalOpen() && !isRemoteOpen())) {
+            if (done !is null) {
+                done(succeededResult!(Void)(null));
             }
+            return null;
+        } else {
+            _isClosing = true;
+        }
 
-            //Promise<Void> future = Promise.promise();
-            //if (done !is null) {
-            //  future.future().setHandler(done);
-            //}
-            if (actualConnection.isDisconnected()) {
-             // future.complete();
-            } else {
-                try {
-                    actualConnection
-                        .disconnectHandler(new class Handler!ProtonConnection{
-                        //  future.tryFail(getErrorMessage(con));
-                         void handle(ProtonConnection var1)
-                         {
-                             _isClosed = true;
-                         }
-                        })
-                        .closeHandler(new class Handler!ProtonConnection {
-                            void handle(ProtonConnection var1)
-                            {
-                                infof("Close handling");
-                                _isClosed = true;
-                                //if (res.succeeded()) {
-                                //  future.tryComplete();
-                                //} else {
-                                //  future.tryFail(res.cause());
-                                //}
-                            }
-                        })
-                        .close();
-                } catch (Exception e) {
-                    //future.fail(e);
-                    logError("AmqpConnection close error");
+        void onClosed(Exception ex) {
+            _isClosing = false;
+
+            if(done !is null) {
+                if(ex is null) {
+                    done(succeededResult!(Void)(null));
+                } else {
+                    done(failedResult!(Void)(ex));
                 }
             }
-    //  });
+        }
+
+        if (actualConnection.isDisconnected()) {
+            onClosed(null);
+        } else {
+            try {
+                actualConnection
+                    .disconnectHandler( (ProtonConnection conn) {
+                        if(cas(&_isClosed, false, true)) {
+                            string msg = getErrorMessage(conn);
+                            version(HUNT_DEBUG) warning(msg);
+                            onClosed(new Exception(msg));
+                        }
+                    })
+                    .closeHandler((res) {
+                        version(HUNT_DEBUG) infof("Close handling");
+                        if(cas(&_isClosed, false, true)) {
+                            if (res.succeeded()) {
+                                onClosed(null);
+                            } else {
+                                onClosed(cast(Exception)res.cause());
+                            }
+                        }
+                    })
+                    .close();
+            } catch (Exception e) {
+                warning(e.msg);
+                version(HUNT_DEBUG) warning(e);
+                onClosed(cast(Exception)e);
+            }
+        }
 
         return this;
     }

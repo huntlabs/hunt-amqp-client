@@ -21,7 +21,11 @@ import std.format;
 import std.parallelism;
 import std.stdio;
 
+import hunt.amqp.impl.ProtonTransport;
+import hunt.proton.engine.Event;
+
 enum Total = 1;
+
 
 void main(string[] agrs) {
 
@@ -64,6 +68,7 @@ void main(string[] agrs) {
 			foreach(index; 0..number) {
 				DateTime dt = cast(DateTime)Clock.currTime();
 				string message = format("[%d] Say hello at %s", index, dt.toSimpleString());
+                message = "xxx123";
                 AmqpMessage amqpMessage = AmqpMessage.create().withBody(message).build();
 				sender.send(amqpMessage);
 				tracef("Message %d sent. The content is: '%s'", index, message);
@@ -73,25 +78,28 @@ void main(string[] agrs) {
 			trace("All message sent.");
             // pool.returnObject(conn);
 
-            sender.end( (VoidAsyncResult ar) {
-                if(ar.succeeded()) {
-                    warning("Sender ended.");
-                } else {
-                    Throwable th = ar.cause();
-                    errorf("Error occured: %s", th.msg);
-                    warning(th);
-                }
-            });
+            // sender.end( (VoidAsyncResult ar) {
+            //     if(ar.succeeded()) {
+            //         warning("Sender ended.");
+            //     } else {
+            //         Throwable th = ar.cause();
+            //         errorf("Error occured: %s", th.msg);
+            //         warning(th);
+            //     }
+            // });
 
             // sender.close( (ar) {
             //     warning("Sender closed.");
             // });
 
-            // conn.close(new class Handler!Void {
-            //     void handle(Void v) {
-            //         warning("Connection closed.");
-            //     }
-            // });
+            client.close( (VoidAsyncResult ar) {
+                if(ar.succeeded()) {
+                    warning("Connection closed.");
+                } else {
+                    Throwable th = ar.cause();
+                    warning(th);
+                }
+            });
         }
     });
     // dfmt on

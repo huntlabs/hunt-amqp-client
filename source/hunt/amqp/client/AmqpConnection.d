@@ -42,7 +42,7 @@ interface AmqpConnection {
      * @param done the close handler notified when the connection is closed. May be {@code null}.
      * @return the connection
      */
-    AmqpConnection close(Handler!Void done);
+    AmqpConnection close(AsyncResultHandler!Void done);
 
     /**
      * Like {@link #close(Handler)} but returns a {@code Future} of the asynchronous result

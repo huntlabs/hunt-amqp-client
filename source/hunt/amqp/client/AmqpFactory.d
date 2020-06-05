@@ -15,6 +15,7 @@ import hunt.concurrency.FuturePromise;
 import hunt.Exceptions;
 import hunt.logging.ConsoleLogger;
 import hunt.net.util.HttpURI;
+import hunt.net.AsyncResult;
 
 import std.format;
 import std.string;
@@ -48,12 +49,14 @@ class AmqpFactory : PooledObjectFactory!(AmqpConnection) {
         auto promise = new FuturePromise!AmqpConnection();
 
         AmqpConnectionImpl conn = new AmqpConnectionImpl(null, _options, _proton, 
-            new class Handler!AmqpConnection {
-                void handle(AmqpConnection conn) {
-                    if (conn is null) 
-                        promise.failed(new Exception("Unable to connect to the broker."));
-                    else
-                        promise.succeeded(conn);
+            (ar) {
+                if(ar.succeeded()) {
+                    promise.succeeded(ar.result());
+                } else {
+                    Throwable th = ar.cause();
+                    warning(th.msg);
+                    version(HUNT_DEWBUG) warning(th);
+                    promise.failed(new Exception("Unable to connect to the broker."));
                 }
             }
         );

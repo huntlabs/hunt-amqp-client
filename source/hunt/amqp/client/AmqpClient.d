@@ -63,7 +63,7 @@ interface AmqpClient {
      * @param connectionHandler handler that will process the result, giving either the connection or failure cause. Must
      *                          not be {@code null}.
      */
-    AmqpClient connect(Handler!AmqpConnection connectionHandler);
+    AmqpClient connect(AsyncResultHandler!AmqpConnection connectionHandler);
 
     /**
      * Like {@link #connect(Handler)} but returns a {@code Future} of the asynchronous result
@@ -79,7 +79,7 @@ interface AmqpClient {
      *
      * @param closeHandler the close handler notified when the operation completes. It can be {@code null}.
      */
-    void close(Handler!Void closeHandler);
+    void close(AsyncResultHandler!Void closeHandler);
 
     /**
      * Like {@link #close(Handler)} but returns a {@code Future} of the asynchronous result
