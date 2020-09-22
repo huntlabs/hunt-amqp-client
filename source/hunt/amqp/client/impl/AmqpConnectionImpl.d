@@ -192,7 +192,7 @@ class AmqpConnectionImpl : AmqpConnection {
             }
         }
 
-        trace("xxxxxxxxxxxxx");
+        version(HUNT_DEBUG) trace("handling...");
 
         if (h !is null) {
             string message = getErrorMessage(conn);
